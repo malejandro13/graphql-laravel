@@ -1,0 +1,38 @@
+input TaskUserInput {
+	user_id: ID!
+  	task_id: ID!
+}
+
+input UsersByTaskInput {
+	users: [UserIdInput!]!
+    task_id: ID!
+}
+
+input UserIdInput {
+    user_id: ID!
+}
+
+type TaskUser {
+    id: ID!
+    user: User! @belongsTo
+    task: Task! @belongsTo
+}
+
+
+type UsersByTaskResponse {
+    usersByTask: [TaskUser!]!
+    message: String!
+    success: Boolean!
+    status: Int!
+}
+
+extend type Query @middleware(checks: ["auth:api"]){
+    usersByTask(task_id: ID! @eq): TaskUser @paginate
+    tasksByUser(user_id: ID! @eq): TaskUser @paginate
+}
+
+extend type Mutation {
+    upsertUsersByTask(input: UsersByTaskInput! @spread): UsersByTaskResponse
+    @field(resolver: "App\\GraphQL\\Mutations\\TaskUserMutator@upsertUsersByTask")
+
+}

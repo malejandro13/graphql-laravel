@@ -1,0 +1,40 @@
+input JobInput {
+  id: ID
+  name_job: String @rules(apply: ["required", "max:190", "string"])
+  user_id: ID! @rules(apply: ["required"])
+}
+
+
+type Job {
+    id: ID!
+    name_job: String!
+    user: User @belongsTo
+}
+
+type JobResponse {
+    job: Job
+    message: String!
+    success: Boolean!
+    status: Int!
+}
+
+
+extend type Query @middleware(checks: ["auth:api"]){
+    jobs: [Job!]! @paginate(defaultCount: 10)
+    job(id: ID! @eq): Job @find
+}
+
+
+extend type Mutation @middleware(checks: ["auth:api"]){
+
+    upsertJob(input: JobInput @spread) : JobResponse!
+    @field(resolver: "App\\GraphQL\\Mutations\\JobMutator@upsertJob")
+
+    deleteJob(id: ID!): JobResponse
+    @field(resolver: "App\\GraphQL\\Mutations\\JobMutator@deleteJob")
+
+    restoreJob(id: ID!): JobResponse
+    @field(resolver: "App\\GraphQL\\Mutations\\JobMutator@restoreJob")
+
+
+}

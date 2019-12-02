@@ -1,0 +1,12 @@
+type Category {
+    id: ID!
+    name_category: String!
+    parent: Category @belongsTo
+    childrens: [Category] @hasMany
+}
+
+
+extend type Query {
+    category(id: ID! @eq): Category @find
+    categories(category_parent_id: Int @where(operator: "=")): [Category] @all
+}

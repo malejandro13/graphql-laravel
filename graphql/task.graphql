@@ -1,0 +1,38 @@
+input TaskInput {
+    id: ID
+    name_task: String @rules(apply: ["required", "max:190"])
+}
+
+type Task {
+    id: ID!
+    name_task: String!
+    users: [User!]! @belongsToMany
+}
+
+type TaskResponse {
+    task: Task
+    message: String!
+    success: Boolean!
+    status: Int!
+}
+
+
+extend type Query @middleware(checks: ["auth:api"]){
+    tasks: [Task!]! @paginate
+    task(id: ID! @eq): Task @find
+}
+
+
+extend type Mutation @middleware(checks: ["auth:api"]){
+
+    upsertTask(input: TaskInput! @spread) : TaskResponse!
+    @field(resolver: "App\\GraphQL\\Mutations\\TaskMutator@upsertTask")
+
+    deleteTask(id: ID!): TaskResponse
+    @field(resolver: "App\\GraphQL\\Mutations\\TaskMutator@deleteTask")
+
+    restoreTask(id: ID!): TaskResponse
+    @field(resolver: "App\\GraphQL\\Mutations\\TaskMutator@restoreTask")
+
+
+}
